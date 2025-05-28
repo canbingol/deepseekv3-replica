@@ -1,16 +1,20 @@
 import torch
+
 torch.autograd.set_detect_anomaly(True)
 torch.set_default_dtype(torch.float32)
 
-from torch.optim.lr_scheduler import StepLR
+import os
+from itertools import islice
+from warnings import filterwarnings
+
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
-from itertools import islice
-from model import ModelArgs, Transformer
-from data import train_loader, val_loader
-from warnings import filterwarnings
+from torch.optim.lr_scheduler import StepLR
+
 import sentencepiece as spm
-import os
+from data import train_loader, val_loader
+from model import ModelArgs, Transformer
+
 filterwarnings('ignore')
 
 args = ModelArgs()
@@ -18,6 +22,8 @@ EPOCH = 1
 MAX_STEP = 500
 LR = 1e-3
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+""" if torch.backends.mps.is_available():
+    device = 'mps' """
 print(f'current device is {device}')
 
 
@@ -71,6 +77,7 @@ val_losses = []
 n_val_sample = 10
 
 import torch.nn.functional as F
+
 
 def sample_from_model(input_ids, max_new_tokens, device='cuda', temperature=1.0, top_k=50, top_p=0.95):
     model.eval()
@@ -213,7 +220,7 @@ for epoch in range(EPOCH):
 
         if (i+1) % 100 == 0 or (i + 1) == len_train_data:
             input_ids = torch.tensor([tokenizer.encode(prompt)], dtype=torch.long) 
-            generated_ids = sample_from_model(input_ids, max_new_tokens=50, device='cuda')
+            generated_ids = sample_from_model(input_ids, max_new_tokens=50, device=device)
             print("Üretilen metin:\n", tokenizer.decode(generated_ids[0].tolist()))
 
         with open('logs/train_loss.txt', 'a') as f:
