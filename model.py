@@ -51,7 +51,7 @@ Model argümanlarını ve hiperparametreleri tanımlayan veri sınıfı.
     max_batch_size: int = 2
     max_seq_len: int = 256
     dtype: Literal["bf16", "fp8"] = "bf16"
-    vocab_size: int = 50256
+    vocab_size: int = 12564
     dim: int = 1024
     inter_dim: int = 4 * dim
     moe_inter_dim: int = 704
