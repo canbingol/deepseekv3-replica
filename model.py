@@ -51,17 +51,17 @@ Model argümanlarını ve hiperparametreleri tanımlayan veri sınıfı.
     max_batch_size: int = 2
     max_seq_len: int = 256
     dtype: Literal["bf16", "fp8"] = "bf16"
-    vocab_size: int = 12564
-    dim: int = 1024
-    inter_dim: int = 4 * dim
+    vocab_size: int = 4096
+    dim: int = 256
+    inter_dim: int = 2 * dim
     moe_inter_dim: int = 704
-    n_layers: int = 6
+    n_layers: int = 4
     n_dense_layers: int = 1
     n_heads: int = 8
     # moe
-    n_routed_experts: int = 4
-    n_shared_experts: int = 2
-    n_activated_experts: int = 2
+    n_routed_experts: int = 2
+    n_shared_experts: int = 1
+    n_activated_experts: int = 1
     n_expert_groups: int = 1
     n_limited_groups: int = 1
     score_func: Literal["softmax", "sigmoid"] = "softmax"
