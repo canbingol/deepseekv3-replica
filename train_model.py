@@ -10,6 +10,7 @@ from warnings import filterwarnings
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import StepLR
+import torch.nn.functional as F
 
 import sentencepiece as spm
 from data import train_loader, val_loader
@@ -76,8 +77,7 @@ val_losses = []
 
 n_val_sample = 10
 
-import torch.nn.functional as F
-
+eos_id = tokenizer.eos_id()
 
 def sample_from_model(input_ids, max_new_tokens, device='cuda', temperature=1.0, top_k=50, top_p=0.95):
     model.eval()
@@ -110,8 +110,10 @@ def sample_from_model(input_ids, max_new_tokens, device='cuda', temperature=1.0,
         # Sampling
         probs = F.softmax(next_token_logits, dim=-1)
         next_token_id = torch.multinomial(probs, num_samples=1)
-
         input_ids = torch.cat([input_ids, next_token_id], dim=1)
+
+        if next_token_id.item == eos_id:
+            break
 
     return input_ids
 

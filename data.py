@@ -16,7 +16,7 @@ tokenizer.load("tokenizer.model")
 args = ModelArgs()
 max_len = args.max_seq_len
 pad_token = tokenizer.pad_id()
-
+eos_id = tokenizer.eos_id()
 
 data_path = ModelArgs.dataset_path
 
@@ -55,7 +55,14 @@ class language_model_dataset(Dataset):
                 
                 # truncating
                 input_chunk = input_chunk[:max_len]
-                target_chunk = target_chunk[:max_len]
+                target_chunk = target_chunk[:max_len]   
+
+                if input_chunk[-1] != eos_id:
+                    input_chunk[-1] = eos_id
+
+                if target_chunk[-1] != eos_id:
+                    target_chunk[-1] = eos_id
+
 
                 # padding
                 input_chunk += [pad_token] * (max_len - len(input_chunk))
