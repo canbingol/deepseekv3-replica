@@ -19,7 +19,7 @@ filterwarnings('ignore')
 
 args = ModelArgs()
 EPOCH = 1
-MAX_STEP = 500
+MAX_STEP = 667987
 LR = 1e-3
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 """ if torch.backends.mps.is_available():
