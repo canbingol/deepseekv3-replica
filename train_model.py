@@ -1,8 +1,4 @@
 import torch
-
-torch.autograd.set_detect_anomaly(True)
-torch.set_default_dtype(torch.float32)
-
 import os
 from itertools import islice
 from warnings import filterwarnings
@@ -11,14 +7,60 @@ import matplotlib.pyplot as plt
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import StepLR
 import torch.nn.functional as F
-
+import argparse
+from dataclasses import fields
+from typing import get_origin, get_args, Literal
 import sentencepiece as spm
 from data import train_loader, val_loader
 from model import ModelArgs, Transformer
 
 filterwarnings('ignore')
 
-args = ModelArgs()
+def parse_model_args_from_cli() -> ModelArgs:
+    parser = argparse.ArgumentParser()
+    for f in fields(ModelArgs):
+        name = f.name
+        ann  = f.type
+        default = f.default
+
+        flag = f"--{name.replace('_','-')}"
+        origin = get_origin(ann)
+
+        if origin is Literal:
+            choices = get_args(ann)
+            base_t = type(choices[0]) if choices else str
+            parser.add_argument(flag, type=base_t, choices=choices, default=default)
+        elif ann is bool:
+            parser.add_argument(flag, action=argparse.BooleanOptionalAction, default=default)
+        else:
+            if origin is not None:
+                opt_args = get_args(ann)
+                base_t = opt_args[0] if opt_args else str
+                parser.add_argument(flag, type=base_t, default=default)
+            else:
+                try:
+                    _ = ann()
+                    parser.add_argument(flag, type=ann, default=default)
+                except Exception:
+                    parser.add_argument(flag, type=type(default) if default is not None else str, default=default)
+
+    args = parser.parse_args()
+    kwargs = vars(args)
+    return ModelArgs(**kwargs)
+
+args = parse_model_args_from_cli()
+print(f"model dim : {args.dim}")
+torch.autograd.set_detect_anomaly(True)
+if args.dtype == "bf16":
+    torch.set_default_dtype(torch.bfloat16)
+else:
+    # Gerçek FP8 path’in yoksa en güvenlisi fp16’a düşmek
+    torch.set_default_dtype(torch.float16)
+
+
+
+
+
 EPOCH = 1
 MAX_STEP = 667987
 LR = 1e-3
@@ -28,7 +70,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'current device is {device}')
 
 
-model = Transformer(ModelArgs)
+model = Transformer(args)
+
 model = model.to(device)
 
 total_params = sum(p.numel() for p in model.parameters())
@@ -38,7 +81,9 @@ moe_params = sum(
     p.numel() for n, p in model.named_parameters()
     if any(key in n for key in ['experts', 'gate', 'shared_experts']) and p.requires_grad
 )
-tokenizer_path = '/kaggle/working/turna_noe/tokenizer.model' if os.path.exists('https://github.com/canbingol/turna_noe/edit/main/train_model.py') else 'tokenizer.model'
+tokenizer_path = '/kaggle/working/turna_noe/tokenizer.model' \
+    if os.path.exists('/kaggle/working/turna_noe/tokenizer.model') else 'tokenizer.model'
+
 tokenizer = spm.SentencePieceProcessor()
 tokenizer.load(tokenizer_path)
 print(f"tokenizer path: {tokenizer_path}")
@@ -112,7 +157,7 @@ def sample_from_model(input_ids, max_new_tokens, device='cuda', temperature=1.0,
         next_token_id = torch.multinomial(probs, num_samples=1)
         input_ids = torch.cat([input_ids, next_token_id], dim=1)
 
-        if next_token_id.item == eos_id:
+        if next_token_id.item() == eos_id:
             break
 
     return input_ids

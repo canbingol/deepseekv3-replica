@@ -49,6 +49,9 @@ class language_model_dataset(Dataset):
             chunk_len =  len(chunk)
             chunk_len +=  len_ratio * stride - chunk_len
 
+            if chunk[-1] != eos_id:
+                chunk.append(eos_id)
+
             for i in range(0, chunk_len - max_len+1, stride):
                 input_chunk = chunk[i: i+max_len]
                 target_chunk = chunk[1+ i: 1+ i+max_len]
@@ -57,11 +60,6 @@ class language_model_dataset(Dataset):
                 input_chunk = input_chunk[:max_len]
                 target_chunk = target_chunk[:max_len]   
 
-                if input_chunk[-1] != eos_id:
-                    input_chunk[-1] = eos_id
-
-                if target_chunk[-1] != eos_id:
-                    target_chunk[-1] = eos_id
 
 
                 # padding

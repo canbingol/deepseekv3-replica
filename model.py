@@ -55,7 +55,7 @@ Model argümanlarını ve hiperparametreleri tanımlayan veri sınıfı.
     dim: int = 512
     inter_dim: int = 2 * dim
     moe_inter_dim: int = 704
-    n_layers: int = 4
+    n_layers: int = 2
     n_dense_layers: int = 1
     n_heads: int = 8
     # moe
@@ -73,7 +73,7 @@ Model argümanlarını ve hiperparametreleri tanımlayan veri sınıfı.
     qk_rope_head_dim: int = 32
     v_head_dim: int = 64
     # yarn
-    original_seq_len: int = 512
+    original_seq_len: int = 256
     rope_theta: float = 10000.0
     rope_factor: float = 40
     beta_fast: int = 32
@@ -86,7 +86,7 @@ Model argümanlarını ve hiperparametreleri tanımlayan veri sınıfı.
 
     # training
     train:bool = True
-    dataset_path = "/kaggle/working/c4_tr-1m.txt" if os.path.exists("/kaggle/working/c4_tr-1m.txt") else "8k_data.txt"
+    dataset_path = "/kaggle/working/c4_tr-1m.txt" if os.path.exists("/kaggle/working/c4_tr-1m.txt") else "c4_tr-1m.txt"
 
 def precompute_freqs_cis(args: ModelArgs) -> torch.Tensor:
     """
@@ -226,8 +226,6 @@ class MLA(nn.Module):
         kv = self.wkv_a(x)
         kv, k_pe = torch.split(kv, [self.kv_lora_rank, self.qk_rope_head_dim],dim=-1)
         k_pe = apply_rotary_emb(k_pe.unsqueeze(2), freqs_cis) # k_pe batch_size içermediğinden ona batch_size boyutu ekliyoruz
-        
-
         # deepseek tarzı attention hesaplaması
         wkv_b = self.wkv_b.weight
         wkv_b = wkv_b.view(self.n_local_head, -1, self.kv_lora_rank)
