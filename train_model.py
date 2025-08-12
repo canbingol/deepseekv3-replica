@@ -120,7 +120,7 @@ len_val_data = len(val_loader)
 train_losses = []
 val_losses = []
 
-n_val_sample = 10
+n_val_sample = 1000
 
 eos_id = tokenizer.eos_id()
 
@@ -265,7 +265,7 @@ for epoch in range(EPOCH):
             print(f"[Epoch {epoch+1} | Step {i+1:>6}/{len_train_data}] "
                   f"Train Loss: {avg_loss:.4f}| Val Loss: {avg_val_loss:.4f} | L_bal: {l_bal    } | LR: {current_lr:.6f}")
 
-        if (i+1) % 100 == 0 or (i + 1) == len_train_data:
+        if (i+1) % 1000 == 0 or (i + 1) == len_train_data:
             input_ids = torch.tensor([tokenizer.encode(prompt)], dtype=torch.long) 
             generated_ids = sample_from_model(input_ids, max_new_tokens=50, device=device)
             print("Üretilen metin:\n", tokenizer.decode(generated_ids[0].tolist()))
@@ -273,7 +273,7 @@ for epoch in range(EPOCH):
         with open('logs/train_loss.txt', 'a') as f:
             f.write(f'{step_id},{avg_loss}\n')
 
-        if (i + 1) % 10_000 == 0:
+        if (i + 1) % 20_000 == 0:
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
