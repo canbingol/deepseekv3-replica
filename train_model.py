@@ -258,7 +258,7 @@ for epoch in range(EPOCH):
         avg_loss = total_train_loss / (i + 1)
         train_losses.append(avg_loss)
 
-        if (i + 1) % 10 == 0 or (i + 1) == len_train_data:
+        if (i + 1) % 100 == 0 or (i + 1) == len_train_data:
             count = count +1
             avg_val_loss = eval_model(epoch, step_id)
             current_lr = scheduler.get_last_lr()[0]
