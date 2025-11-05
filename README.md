@@ -1,4 +1,4 @@
-# TurnaMoE: Modular LLM with Mixture-of-Experts and SentencePiece
+#  DeepSeek Replica
 
 Bu proje, Türkçe metinler üzerinde eğitilebilecek modüler bir LLM (Large Language Model) mimarisi sunar. Model, **DeekSeekV3** mimarisine sahiptir ve **SentencePiece** ile özel bir tokenizer kullanır.
 
